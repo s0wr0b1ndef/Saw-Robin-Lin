@@ -1,6 +1,5 @@
 ## Redteamer's cheatsheet
 Who am i ? >>> Robin(Blueteamer) 
-#If you want to be a good BLUE guy , you must appreciate the RED guy! man
 
 ### Markdown
 
