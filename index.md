@@ -1,8 +1,6 @@
 ## Redteamer's cheatsheet
-
-You can use the [editor on GitHub](https://github.com/s0wr0b1ndef/Notes/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Who am i ? >>> Robin(Blueteamer) 
+#If you want to be a good BLUE guy , you must appreciate the RED guy! man
 
 ### Markdown
 
