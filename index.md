@@ -1,5 +1,6 @@
 ## Redteamer's cheatsheet
-Who am i ? >>> Robin(Blueteamer) 
+#whoami
+Robin(Blueteamer) 
 
 ### Enumeration 
 
