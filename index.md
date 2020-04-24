@@ -8,5 +8,5 @@
 ###### nmap -sC -sV -O --open -p- -oA nmap/full <ip or cidr>
 
 ###### nmap -sU -p- -oA nmap/udp <ip or cidr>
-
- 
+To specifiy the script & port
+###### nmap --scripts vuln,safe,discovery -p 443,80 <ip or cidr>
