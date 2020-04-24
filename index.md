@@ -11,5 +11,5 @@ nmap -sU -p- -oA nmap/udp <ip or cidr>
 
 ##### To specifiy the script & port
 nmap --scripts vuln,safe,discovery -p 443,80 <ip or cidr>
-###### Servers that could be not ping ?then add the flag -Pn
+##### Servers that could be not ping ?then add the flag -Pn
 nmap -Pn --top-ports 50 --open -oA nmap/initial <ip or cidr>
