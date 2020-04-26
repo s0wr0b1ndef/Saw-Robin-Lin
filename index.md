@@ -24,7 +24,7 @@ top10=(20 21 22 23 25 80 110 139 443 445 3389); for i in "${top10[@]}"; do nc -w
 /dev/tcp/ip/port or /dev/udp/ip/port
 Alternatively, is possible to do the same than above but by using the special dev files /dev/tcp/ip/port or /dev/udp/ip/port (for example nc is not found):
 ~~~
-top10=(20 21 22 23 25 80 110 139 443 445 3389); for i in "${top10[@]}"; do (echo > /dev/tcp/192.168.30.253/"$i") > /dev/null 2>&1 && echo "Port $i is open"; done 
+top10=(20 21 22 23 25 80 110 139 443 445 3389); for i in "${top10[@]}"; do (echo > /dev/tcp/192.168.30.253/"$i") > /dev/null 2>&1 && echo "Port $i is open" || echo "Port $i is closed"; done
 ~~~
 Taking these last examples, is straightforward to create a dummy script for scan a hole /24 net (for example):
 
