@@ -56,7 +56,7 @@ SSH-2.0-OpenSSH_6.2p2 Debian-6
 ~~~
 
 ###### Web directorie/file scanner
-####### Gobuster
+###### Gobuster
 Scan all the directories/files by extension:
 ~~~
 gobuster dir -u http://192.168.24.24 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -x php,txt,py -o webscan/gobuster-extensions
@@ -75,7 +75,7 @@ Web fuzzer, you can get fuff here, it basically bruteforces the dirs.
 ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -u http://192.168.24.24/FUZZ
 ~~~
 
-##### Samba
+##### Samba 
 ###### smbclient
 Check if there is anonymous login enabled:
 ~~~
@@ -86,3 +86,15 @@ Is also possible to use impacket in the same way than smbclient to check for ano
 ~~~
 /usr/share/doc/python3-impacket/examples/smbclient.py ""@192.168.24.24
 ~~~
+###### smbmap
+Check which permissions we have in those shares (if there are):
+~~~
+smbmap -H 192.168.24.24
+Or having an user:
+smbmap -u ceso -H 192.168.24.24
+~~~
+
+###### Version (nmap didn’t detect it)
+Sometimes nmap doesn’t show the version of Samba in the remote host, if this happens, a good way to know which version the remote host is running, is to capture traffic with wireshark against the remote host on 445/139 and in parallel run an smbclient -L, do a follow tcp stream and with this we might see which version the server is running.
+
+
