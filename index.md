@@ -38,3 +38,19 @@ for host in range {1..255}; do
     done
 done
 ```
+##### Banner grabbing (without nmap)
+If nmap didn’t grab banners (or is not installed), you can do it with /dev/tcp/ip/port /dev/udp/ip/port or by using telnet.
+~~~
+/dev/tcp/ip/port or /dev/udp/ip/port
+cat < /dev/tcp/192.168.30.253/22
+SSH-2.0-OpenSSH_6.2p2 Debian-6
+^C pressed here
+~~~
+For doing it with udp ports is the same, but changing tcp for udp
+
+###### telnet
+~~~
+telnet 192.168.30.253 22
+SSH-2.0-OpenSSH_6.2p2 Debian-6
+^C pressed here
+~~~
