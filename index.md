@@ -54,3 +54,10 @@ telnet 192.168.30.253 22
 SSH-2.0-OpenSSH_6.2p2 Debian-6
 ^C pressed here
 ~~~
+
+###### Web directorie/file scanner
+####### Gobuster
+Scan all the directories/files by extension:
+~~~
+gobuster dir -u http://192.168.24.24 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -x php,txt,py -o webscan/gobuster-extensions
+~~~
