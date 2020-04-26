@@ -201,4 +201,25 @@ sshuttle ceso@192.168.20.35 192.168.30.0/24
 ~~~
 ###### Multi-hops
 Now imagine that after we broke up into the management net after some some enumeration, we ended to compromise a machine that has also access to a production environment (foreman.example.mgmt - ips 192.168.30.40 and 192.168.25.87), we can take advantage of sshuttle + ProxyCommand of ssh to create a “vpn” through this multiple hops, so…putting it down, this will be kind of as follow (the diagram is extremly simplified and just for the sake of illustrate this visually, so it doesn’t intend to provide a 100% precise network diagram):
+![image](https://user-images.githubusercontent.com/37288034/80310741-48264080-8802-11ea-966f-f4e28eacab5a.png)
 
+To have that working, is needed to put the next conf in your ssh conf file (normally ~/.ssh/config. It’s based on the example above, but is easy to extrapolate to different scenarios):
+~~~
+Host fw.example.mgmt
+  Hostname 192.168.20.35
+  User userOnFw
+  IdentityFile ~/.ssh/priv_key_fw
+Host foreman.example.mgmt
+  Hostname 192.168.30.40
+  User root
+  ProxyJump fw.example.mgmt
+  IdentityFile ~/.ssh/priv_key_internal
+~~~
+And now to setup the “multiple hop vpn”, run:
+~~~
+sshuttle -r foreman.example.mgmt -v 192.168.25.0/24 &
+~~~
+Later on is possible to connect from the local machine:
+~~~
+ssh foo@192.168.25.74
+~~~
