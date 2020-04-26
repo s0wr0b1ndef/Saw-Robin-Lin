@@ -24,3 +24,14 @@ top10=(20 21 22 23 25 80 110 139 443 445 3389); for i in "${top10[@]}"; do nc -w
 Alternatively, is possible to do the same than above but by using the special dev files /dev/tcp/ip/port or /dev/udp/ip/port (for example nc is not found):
 
 top10=(20 21 22 23 25 80 110 139 443 445 3389); for i in "${top10[@]}"; do (echo > /dev/tcp/192.168.30.253/"$i") > /dev/null 2>&1 && echo "Port $i is open" 
+
+Taking these last examples, is straightforward to create a dummy script for scan a hole /24 net (for example):
+
+#!/bin/bash
+subnet="192.168.30"
+top10=(20 21 22 23 25 80 110 139 443 445 3389)
+for host in range {1..255}; do
+    for port in "${top10[@]}"; do
+        (echo > /dev/tcp/"${subnet}.${host}/${port}") > /dev/null 2>& && echo "Host ${subnet}.${host} has ${port} open" || "Host ${subnet}.${host} has ${port} closed"
+    done
+done
