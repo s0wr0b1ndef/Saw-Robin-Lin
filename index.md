@@ -61,3 +61,28 @@ Scan all the directories/files by extension:
 ~~~
 gobuster dir -u http://192.168.24.24 -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -x php,txt,py -o webscan/gobuster-extensions
 ~~~
+For scanning without extensions, just take out the -x
+
+###### Nikto
+Sometimes Nikto shows juicy information, I tend to run it like:
+~~~
+nikto -Format txt -o webscan/nikto-initial -host http://192.168.24.24 -p 8080
+~~~
+
+###### fuff
+Web fuzzer, you can get fuff here, it basically bruteforces the dirs.
+~~~
+ffuf -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -u http://192.168.24.24/FUZZ
+~~~
+
+##### Samba
+###### smbclient
+Check if there is anonymous login enabled:
+~~~
+smbclient -L 192.168.24.24
+~~~
+###### impacket
+Is also possible to use impacket in the same way than smbclient to check for anonymous login (and a lot more as browse the shares) in case of incompatible versions.
+~~~
+/usr/share/doc/python3-impacket/examples/smbclient.py ""@192.168.24.24
+~~~
