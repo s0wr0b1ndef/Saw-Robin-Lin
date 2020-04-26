@@ -125,3 +125,22 @@ Is needed to have installed cifs-utils, to install it (in debian based):
 ~~~
 sudo apt-get install cifs-utils
 ~~~
+To mount it:
+~~~
+sudo mount -t cifs //192.168.42.42/tools ~/my_share/
+~~~
+To list mounted shares:
+~~~
+mount | grep cifs
+grep cifs /proc/mount
+~~~
+##### HTTP
+From your local attacker machine, create a http server with:
+~~~
+sudo python3 -m http.server 80
+sudo python2 -m SimpleHTTPServer 80
+~~~
+It’s also possible to specify which path to share, for example:
+~~~
+sudo python3 -m http.server 80 --dir /home/kali/tools
+~~~
