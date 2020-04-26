@@ -97,4 +97,5 @@ smbmap -u ceso -H 192.168.24.24
 ###### Version (nmap didn’t detect it)
 Sometimes nmap doesn’t show the version of Samba in the remote host, if this happens, a good way to know which version the remote host is running, is to capture traffic with wireshark against the remote host on 445/139 and in parallel run an smbclient -L, do a follow tcp stream and with this we might see which version the server is running.
 
+![image](https://user-images.githubusercontent.com/37288034/80310413-a2be9d00-8800-11ea-82b8-21dc0e059a1e.png)
 
