@@ -451,6 +451,7 @@ msfvenom -p windows/exec -b '\x00\x0A' -f python --var-name buffer CMD=calc.exe 
 ##### Usefull links
 ###### Privilege escalation
 Linux
+
 https://gtfobins.github.io/
 https://book.hacktricks.xyz/linux-unix/privilege-escalation
 https://guif.re/linuxeop
@@ -459,6 +460,7 @@ https://www.win.tue.nl/~aeb/linux/hh/hh-8.html
 http://www.dankalia.com/tutor/01005/0100501004.htm
 
 Windows
+
 https://www.absolomb.com/2018-01-26-Windows-Privilege-Escalation-Guide/
 http://www.fuzzysecurity.com/tutorials/16.html
 https://github.com/J3rryBl4nks/LPEWalkthrough/blob/master/Walkthrough.md
@@ -470,13 +472,16 @@ https://github.com/frizb/Windows-Privilege-Escalation
 
 ###### Misc
 Windows
+
 http://www.cheat-sheets.org/saved-copy/Windows_folders_quickref.pdf
 https://www.lemoda.net/windows/windows2unix/windows2unix.html
 https://bernardodamele.blogspot.com/2011/12/dump-windows-password-hashes.html
 https://gracefulsecurity.com/path-traversal-cheat-sheet-windows/
 https://bernardodamele.blogspot.com/2011/12/dump-windows-password-hashes.html
 https://malicious.link/post/2016/kerberoast-pt1/
+
 Linux
+
 http://www.pathname.com/fhs/pub/fhs-2.3.html
 https://github.com/rapid7/ssh-badkeys
 http://www.linusakesson.net/programming/tty/
