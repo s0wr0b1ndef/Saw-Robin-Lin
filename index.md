@@ -109,3 +109,19 @@ Mounting it in Windows with Powershell:
 ~~~
 New-PSDrive -Name "tools" -PSProvider "Filesystem" -Root "\\192.168.42.42\tools"
 ~~~
+
+###### Mounting it without Powershell:
+~~~
+net use z: \\192.168.42.42\tools"
+~~~
+On windows, to list mounted shares, either Powershell or without it:
+~~~
+Powershell: Get-SMBShare
+Without Powershell: net share
+~~~
+
+Mount in Linux
+Is needed to have installed cifs-utils, to install it (in debian based):
+~~~
+sudo apt-get install cifs-utils
+~~~
