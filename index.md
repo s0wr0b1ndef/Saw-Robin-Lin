@@ -528,7 +528,4 @@ https://book.hacktricks.xyz/
 https://0xdf.gitlab.io/2018/12/02/pwk-notes-smb-enumeration-checklist-update1.html
 https://www.netsecfocus.com/oscp/2019/03/29/The_Journey_to_Try_Harder-_TJNulls_Preparation_Guide_for_PWK_OSCP.html
 
----
-layout: page
-title: Azure Security Research
----
+[link to Google](https://www.google.com)
