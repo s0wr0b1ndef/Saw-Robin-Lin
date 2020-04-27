@@ -1,7 +1,4 @@
-![image](https://user-images.githubusercontent.com/37288034/80329854-90c51480-8869-11ea-83c5-fbd43e837c8a.png)
-
-## Redteamer's cheatsheet
-
+![image](https://user-images.githubusercontent.com/37288034/80330557-79872680-886b-11ea-863e-7bb3899ef3a2.png)
 ### Enumeration 
 
 #### Nmap - initial one, a full one and an UDP one, all of them in parallel
