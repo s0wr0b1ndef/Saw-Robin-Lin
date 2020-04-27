@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/37288034/80330557-79872680-886b-11ea-863e-7bb3899ef3a2.png)
+![image](https://user-images.githubusercontent.com/37288034/80330762-0af69880-886c-11ea-920b-7a36e602c3c4.png)
 ### Enumeration 
 
 #### Nmap - initial one, a full one and an UDP one, all of them in parallel
